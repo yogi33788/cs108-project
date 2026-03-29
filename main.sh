@@ -2,7 +2,7 @@
 echo "Welcome to Gaming World"
 echo "Let go of stress,let the chill begin."
 check_user() {
-    temp=$(grep "^$1\t" users.tsv)
+    temp=$(grep "^$1"$'\t' users.tsv)
     if [[ "${temp}" = "" ]]; then
         return 1
     else 
@@ -20,15 +20,15 @@ if check_user "$user"; then
 read -s -p "Enter player$player_no password: " pass 
 echo ""
 hashedpass=$(echo -n "${pass}" | sha256sum | cut -d ' ' -f1 )
-storedpass=$(grep "^$user\t" users.tsv | cut -d $'\t' -f2 )
-if [[ ${hashedpass} == ${storedpass} ]]; then
-        echo "${user} login succesful"
-        echo "$user"
-        return 0        
-    else
-        echo "Invalid password"
-        echo "Please try again"
-fi
+storedpass=$(grep "^$user"$'\t' users.tsv | cut -d $'\t' -f2 )
+        if [[ ${hashedpass} == ${storedpass} ]]; then
+            echo "${user} login succesful"
+            echo "$user"
+            return 0        
+        else
+            echo "Invalid password"
+            echo "Please try again"
+        fi
     else
         read -p "You want to register(Y/N): " select
         if [[ "${select}" == "Y" ]]; then 
@@ -41,6 +41,7 @@ fi
             else
                 echo "Player not registered"
         fi
+fi
 done
 }
 player1_user=$(player_login "1" | tail -n 1 )
@@ -54,4 +55,4 @@ while true; do
         echo "Player2 need to login again"
     fi
 done
-game.py "$player1_user" "$player2_user"
+python3 game.py "$player1_user" "$player2_user"
