@@ -16,15 +16,15 @@ c5 = (237,232,245)
 active = True
 
 #font
-font1 = pygame.font.Font('/home/praneeth976/game/1.ttf',50)
-font2 = pygame.font.Font('/home/praneeth976/game/2.ttf',40)
+font1 = pygame.font.Font('1.ttf',50)
+font2 = pygame.font.Font('2.ttf',40)
 
 #player
 player = 1
 
 #X and O
-X_surf = pygame.image.load('/home/praneeth976/game/X.png')
-O_surf = pygame.image.load('/home/praneeth976/game/O.png')
+X_surf = pygame.image.load('tictactoe.py/X.png')
+O_surf = pygame.image.load('/tictactoe.py/O.png')
 
 #virtual screen
 base_width = 800
