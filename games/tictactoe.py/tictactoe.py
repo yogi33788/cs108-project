@@ -23,8 +23,8 @@ font2 = pygame.font.Font('2.ttf',40)
 player = 1
 
 #X and O
-X_surf = pygame.image.load('tictactoe.py/X.png')
-O_surf = pygame.image.load('/tictactoe.py/O.png')
+X_surf = pygame.image.load('X.png')
+O_surf = pygame.image.load('O.png')
 
 #virtual screen
 base_width = 800
@@ -62,59 +62,56 @@ for i in range(rows):
         for j in range(columns):
             rectangle[i][j] = pygame.Rect((i)*(gap+side)+x_margin, (j)*(gap+side)+y_margin, side, side)
 
-def Win(used, i, j, player):
-    #row check
-    row_limit = j-4
-    if row_limit < 0:
-        row_limit = 0
-    for r in range(row_limit, j+1):
-        if r+4 <= 9:
-            window = used[i,r:r+5]
-            if np.all(window == player):
-                print('True')
-                return
+def Win(used, player):
+    x = (used == player)
 
-    #column check
-    column_limit = i-4
-    if column_limit < 0:
-        column_limit = 0
-    for c in range(column_limit, i+1):
-        if c+4 <=9:
-            window = used[c:c+5,j]
-            if np.all(window == player):
-                print('True')
-                return
+    # row check
+    row_0 = x[:, 0:5].all(axis=1)
+    row_1 = x[:, 1:6].all(axis=1)
+    row_2 = x[:, 2:7].all(axis=1)
+    row_3 = x[:, 3:8].all(axis=1)
+    row_4 = x[:, 4:9].all(axis=1)
+    row_5 = x[:,5:10].all(axis=1)
 
-    #diagonal check
-    if i >= j:
-        minimum = j
-    else:
-        minimum = i
-    if minimum <= 4:
-        diagonal = minimum 
-    else:
-        diagonal = 4
-    for d in range(0,diagonal):
-        if i-diagonal+d+5<=9 and j-diagonal+d+5<=9:
-            window = used[i-diagonal+d:i-diagonal+d+5,j-diagonal+d:j-diagonal+d+5].diagonal()
-            if np.all(window == player):
-                print('True')
-                return
-    if i >= 9-j:
-        minimum = 9-j
-    else:
-        minimum = i
-    if minimum <= 4:
-        diagonal = minimum
-    else:
-        diagonal = 4
-    for d in range(0,diagonal):
-        if i-diagonal+d+5 <= 9 and j+diagonal-d-5 >=0:
-            window = np.fliplr(used[i-diagonal+d:i-diagonal+d+5,j+diagonal-d:j+diagonal-d-5]).diagonal()
-            if np.all(window == player):
-                print('True')
-                return
+    if np.any(row_0 | row_1 | row_2 | row_3 | row_4 | row_5):
+        print('True')
+        return True
+
+    # column check
+    col_0 = x[0:5,:].all(axis=0)
+    col_1 = x[1:6,:].all(axis=0)
+    col_2 = x[2:7,:].all(axis=0)
+    col_3 = x[3:8,:].all(axis=0)
+    col_4 = x[4:9,:].all(axis=0)
+    col_5 = x[5:10,:].all(axis=0)
+
+    if np.any(col_0 | col_1 | col_2 | col_3 | col_4 | col_5):
+        print('True')
+        return True
     
+    # diagonal check \
+    square_0 = x[0:6, 0:6]
+    square_1 = x[1:7, 1:7]
+    square_2 = x[2:8, 2:8]
+    square_3 = x[3:9, 3:9]
+    square_4 = x[4:10, 4:10]
+
+    arr = (square_0 & square_1 & square_2 & square_3 & square_4)
+    if np.any(arr):
+        print('True')
+        return True
+    
+    # diagonal check /
+    sq0 = x[0:6, 4:10]
+    sq1 = x[1:7, 3:9]
+    sq2 = x[2:8, 2:8] 
+    sq3 = x[3:9, 1:7] 
+    sq4 = x[4:10, 0:6]
+
+    ar = (sq0 & sq1 & sq2 & sq3 & sq4) 
+    if np.any(ar):                  
+        print('True')
+        return 
 while True:
 
     cur_width = real_screen.get_width()
@@ -153,11 +150,11 @@ while True:
                     if rectangle[i][j].collidepoint(virtual_mouse_x, virtual_mouse_y) and used[i][j] == None:
                         if player == 1:
                             used[i][j] = 1
-                            Win(used, i, j, player)
+                            Win(used, player)
                             player = 0
                         else:
                             used[i][j] = 0
-                            Win(used, i, j, player)
+                            Win(used, player)
                             player = 1
                             
 
