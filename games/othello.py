@@ -57,6 +57,98 @@ for i in range(rows):
     for j in range(columns):
         rectangle[i][j] = pygame.Rect(j * (gap + side) + x_margin, i * (gap + side) + y_margin, side, side)
 
+def checkline(line, i, player):
+    check = False
+    other_player = 1 - player
+    if i >= len(line) - 1:
+        front = np.array([])
+    else:
+        front = line[i+1:]
+
+    not_opp_disc = np.where(front != other_player)[0]
+    if not_opp_disc.size != 0:
+        x = not_opp_disc[0]
+        if x > 0 and (i + 1 + x) < len(line) and line[i + 1 + x] == player:
+            line[i+1:i+1+x] = player
+            check = True
+
+    if i <= 0:
+        back = np.array([])
+    else:
+        back = line[:i][::-1]
+
+    not_opp_disc = np.where(back != other_player)[0]
+    if not_opp_disc.size != 0:
+        x = not_opp_disc[0]
+        if x > 0 and (i - 1 - x) >= 0 and line[i - 1 - x] == player:
+            line[i-x:i] = player
+            check = True
+
+    return check
+
+def hor_check(i,j,used,player):
+    line = used[i,:]
+    return checkline(line,j,player)
+    
+def ver_check(i,j,used,player):
+    line = used[:,j]
+    return checkline(line,i,player)
+
+# diagonal check \
+def diag1_check(i, j, used, player):
+    line = np.diagonal(used, offset=j-i).copy() 
+    d = min(i, j)
+    check = checkline(line, d, player)
+    if check:
+        n = len(line)
+        r = np.arange(max(0, i-j), max(0, i-j) + n)
+        c = np.arange(max(0, j-i), max(0, j-i) + n)
+        used[r, c] = line
+    return check
+
+# diagonal check /        
+def diag2_check(i, j, used, player):
+    used_fliplr = np.fliplr(used).copy() 
+    line = np.diagonal(used_fliplr, offset=7-(i+j)).copy() 
+    d = min(i, 7-j)
+    check = checkline(line, d, player)
+    if check:
+        n = len(line)
+        r = np.arange(max(0, i-(7-j)), max(0, i-(7-j)) + n)
+        c = np.arange(max(0, (7-j)-i), max(0, (7-j)-i) + n)
+        used_fliplr[r, c] = line
+        used[:] = np.fliplr(used_fliplr)
+    return check
+    
+#check and  flip 
+def check_and_flip(i,j,used,player):
+    if used[i,j] is not None :
+        return False
+    hor = hor_check(i,j,used,player)
+    ver = ver_check(i,j,used,player)
+    diag1 = diag1_check(i,j,used,player)
+    diag2 = diag2_check(i,j,used,player)
+    return (hor|ver|diag1|diag2)
+
+def has_any_valid_move(used,player):
+    i,j = np.where(used == None )
+
+    def valid(n):
+        if n >= len(i):
+            return False
+        if check_and_flip(i[n],j[n],used.copy(),player):
+            return True
+        return valid(n+1)
+    
+    if len(i) == 0 :
+        return False
+    return valid(0)
+    
+def score(used,player):
+    black_score = np.sum(used == 0)
+    white_score = np.sum(used == 1)
+    print(f"Black:{black_score}  White:{white_score}")
+
 
 while True:
     cur_width = real_screen.get_width()
@@ -94,7 +186,7 @@ while True:
             for i in range(rows):
                 for j in range(columns):
                     if rectangle[i][j].collidepoint(virtual_mouse_x, virtual_mouse_y):
-                        if check_and_flip():
+                        if check_and_flip(i,j,used,player):
                             used[i][j] = player
                             score(used, player)
                             if has_any_valid_move(used, 1 - player):
