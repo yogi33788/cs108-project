@@ -89,7 +89,7 @@ while True:
 
     if opt1.collidepoint(mouse_pos):
         pygame.draw.rect(screen, c4, opt1, border_radius = 20)
-        pygame.draw.rect(screen, 'White', opt1,5, border_radius = 20)
+        pygame.draw.rect(screen, 'White', opt1,3, border_radius = 20)
     else:
         pygame.draw.rect(screen, c3, opt1, border_radius = 10)
         pygame.draw.rect(screen, 'White', opt1,5, border_radius = 10)
