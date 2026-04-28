@@ -1,132 +1,184 @@
-import pygame, sys
-pygame.init()
+import pygame,sys
+from games.base_game import Base 
+from games.tictactoe import Tictactoe
+from games.connect4 import Connect4
+#from games.othello import Othello 
+import subprocess 
 
-#game conditions
+class Menu:
+    def __init__(self,width,height,p1, p2):
+        # basic screen intialization and background
+        pygame.init() 
+        self.font1 = pygame.font.Font('1.ttf',30)
+        self.p1 = p1
+        self.p2 = p2
+        self.base_width = width
+        self.base_height = height
+        self.font3 = pygame.font.Font('3.ttf',(self.base_height//20))
+        self.clock = pygame.time.Clock()
+        self.real_screen = pygame.display.set_mode((self.base_width, self.base_height), pygame.RESIZABLE)
+        pygame.display.set_caption('GAME HUB')
+        self.virtual_screen = pygame.Surface((self.base_width, self.base_height))
+        self.background_surf = pygame.image.load('background.png').convert_alpha()
+        self.background_rect = self.background_surf.get_rect(center = (self.base_width/2,self.base_height/2))
+        self.opt1 = pygame.Rect(self.base_width/3.8,250,self.base_width/2,self.base_width/8)
+        self.opt2 = pygame.Rect(self.base_width/3.8,400,self.base_width/2,self.base_width/8)
+        self.opt3 = pygame.Rect(self.base_width/3.8,550,self.base_width/2,self.base_width/8)
+        self.opt4 = pygame.Rect(self.base_width/3.8,9*(self.base_width/10)-10,self.base_width/4,self.base_width/10)       
+        self.selected_game = None
+        self.outro_surf = pygame.image.load('outro.png')
+        self.outro_rect = self.outro_surf.get_rect(center = (self.base_width/2,self.base_height/2))
+        self.text_surf = self.font1.render('#sort by::', False, 'White')
+        self.text_rect = self.text_surf.get_rect(center = (self.base_width/2, 200))
 
-intro = True
-game1 = False
-game2 = False
-game3 = False
+    def gameloop(self):
+        #game loop
+        while True:
+            current_width = self.real_screen.get_width()
+            current_height = self.real_screen.get_height()
+            mouse_x, mouse_y = pygame.mouse.get_pos()
+            self.virtual_mouse_x = ((mouse_x*self.base_width)/current_width)
+            self.virtual_mouse_y = ((mouse_y*self.base_height)/current_height)
 
-#colors for intro screen
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.selected_game:
+                        if not self.selected_game.gameover:
+                            if not self.selected_game.animate:
+                                self.selected_game.handle_event(event, (self.virtual_mouse_x, self.virtual_mouse_y))
+                        else:
+                            self.Outro_click() 
+                    else:
+                        self.selection()
+            
+            if self.selected_game == None:  
+                self.virtual_screen.blit(self.background_surf,self.background_rect)
+            if self.selected_game:
+                if not self.selected_game.gameover:
+                    self.selected_game.update(self.virtual_screen)
+                    self.selected_game.draw(self.virtual_screen,self.virtual_mouse_x,self.virtual_mouse_y)
+                else:
+                    self.Outro()
+            else:    
+                self.hover()
 
-c1 = (61,82,160)
-c2 = (112,145,230)
-c3 = (134,151,196)
-c4 = (173,187,218)
-c5 = (237,232,245)
+            scaled_screen = pygame.transform.smoothscale(self.virtual_screen,(current_width,current_height))
+            self.real_screen.blit(scaled_screen,(0,0))
+            pygame.display.update()
+            self.clock.tick(60)
 
-#variables defined
-clock = pygame.time.Clock()
+    def hover(self):  
+        if self.opt1.collidepoint((self.virtual_mouse_x,self.virtual_mouse_y)):
+            pygame.draw.rect(self.virtual_screen, (80, 140, 180), self.opt1, border_radius = 20)
+            pygame.draw.rect(self.virtual_screen, 'White', self.opt1,3, border_radius = 20)
+        else:
+            pygame.draw.rect(self.virtual_screen, (40, 60, 80), self.opt1, border_radius = 10)
+            pygame.draw.rect(self.virtual_screen, 'White',self.opt1,3, border_radius = 10)
 
-#constants
+        if self.opt2.collidepoint((self.virtual_mouse_x,self.virtual_mouse_y)):
+            pygame.draw.rect(self.virtual_screen, (80, 140, 180), self.opt2, border_radius = 20)
+            pygame.draw.rect(self.virtual_screen, 'White', self.opt2,3, border_radius = 20)
+        else:
+            pygame.draw.rect(self.virtual_screen, (40, 60, 80), self.opt2, border_radius = 10)
+            pygame.draw.rect(self.virtual_screen, 'White',self.opt2,3, border_radius = 10)
 
-display_width = 800
-display_height = 800
+        if self.opt3.collidepoint((self.virtual_mouse_x,self.virtual_mouse_y)):
+            pygame.draw.rect(self.virtual_screen, (80, 140, 180), self.opt3, border_radius = 20)
+            pygame.draw.rect(self.virtual_screen, 'White', self.opt3,3, border_radius = 20)
+        else:
+            pygame.draw.rect(self.virtual_screen, (40, 60, 80), self.opt3, border_radius = 10)
+            pygame.draw.rect(self.virtual_screen, 'White',self.opt3,3, border_radius = 10)
 
-#screen
+        self.opt1_surf = self.font3.render('Tic Tac Toe', False, 'White').convert_alpha()
+        opt1_rect = self.opt1_surf.get_rect(center = self.opt1.center)
 
-screen = pygame.display.set_mode((display_width, display_height), pygame.RESIZABLE)
-pygame.display.set_caption('Game')
+        self.opt2_surf = self.font3.render('Othello', False, 'White').convert_alpha()
+        opt2_rect = self.opt2_surf.get_rect(center = self.opt2.center)
 
-#fonts
+        self.opt3_surf = self.font3.render('Connect4', False, 'White').convert_alpha()
+        opt3_rect = self.opt3_surf.get_rect(center = self.opt3.center)
+        self.virtual_screen.blit(self.opt1_surf,opt1_rect)
+        self.virtual_screen.blit(self.opt2_surf,opt2_rect)
+        self.virtual_screen.blit(self.opt3_surf,opt3_rect)
 
-font1 = pygame.font.Font('1.ttf',(display_height//10))
-font2 = pygame.font.Font('2.ttf',(display_height//16))
-font3 = pygame.font.Font('3.ttf',(display_height//20))
-player_surf = pygame.image.load('CS.png').convert_alpha()
-while True:
+    def Outro_click(self):
+        if self.opt4.collidepoint(self.virtual_mouse_x, self.virtual_mouse_y):
+            self.selected_game = None
 
-    mouse_pos = pygame.mouse.get_pos()
+        elif self.opt1.collidepoint(self.virtual_mouse_x, self.virtual_mouse_y):
+            self.run_leaderboard('wins')
 
-    #border animation
+        elif self.opt2.collidepoint(self.virtual_mouse_x, self.virtual_mouse_y):
+            self.run_leaderboard('losses')
 
-    curr_height = screen.get_height()
-    curr_width = screen.get_width()
+        elif self.opt3.collidepoint(self.virtual_mouse_x, self.virtual_mouse_y):
+            self.run_leaderboard('wbyl')
 
-    x = curr_height
-    y = curr_width
+    def run_leaderboard(self, sort_by,player):
+        pygame.quit()
+        subprocess.run(['bash', 'leaderboard.sh', sort_by])
+        sys.exit()
 
-    if curr_height != display_height:
-        display_height = curr_height
-        font1 = pygame.font.Font('1.ttf',(display_height//10))
-        font2 = pygame.font.Font('2.ttf',(display_height//16))
-        font3 = pygame.font.Font('3.ttf',(display_height//20))
+    def selection(self):
+        if self.opt1.collidepoint(self.virtual_mouse_x,self.virtual_mouse_y):
+            self.selected_game = Tictactoe(self.p1,self.p2)
+        elif self.opt2.collidepoint(self.virtual_mouse_x,self.virtual_mouse_y):
+            self.selected_game = Othello(self.p1,self.p2)
+        elif self.opt3.collidepoint(self.virtual_mouse_x,self.virtual_mouse_y):
+            self.selected_game = Connect4(self.p1,self.p2)
+        else:
+            pass
         
-    #border
+    def Outro(self):
+        self.virtual_screen.blit(self.outro_surf,self.outro_rect)
+        if self.opt1.collidepoint((self.virtual_mouse_x,self.virtual_mouse_y)):
+            pygame.draw.rect(self.virtual_screen, (80, 140, 180), self.opt1, border_radius = 20)
+            pygame.draw.rect(self.virtual_screen, 'White', self.opt1,3, border_radius = 20)
+        else:
+            pygame.draw.rect(self.virtual_screen, (40, 60, 80), self.opt1, border_radius = 10)
+            pygame.draw.rect(self.virtual_screen, 'White',self.opt1,3, border_radius = 10)
 
+        if self.opt2.collidepoint((self.virtual_mouse_x,self.virtual_mouse_y)):
+            pygame.draw.rect(self.virtual_screen, (80, 140, 180), self.opt2, border_radius = 20)
+            pygame.draw.rect(self.virtual_screen, 'White', self.opt2,3, border_radius = 20)
+        else:
+            pygame.draw.rect(self.virtual_screen, (40, 60, 80), self.opt2, border_radius = 10)
+            pygame.draw.rect(self.virtual_screen, 'White',self.opt2,3, border_radius = 10)
 
+        if self.opt3.collidepoint((self.virtual_mouse_x,self.virtual_mouse_y)):
+            pygame.draw.rect(self.virtual_screen, (80, 140, 180), self.opt3, border_radius = 20)
+            pygame.draw.rect(self.virtual_screen, 'White', self.opt3,3, border_radius = 20)
+        else:
+            pygame.draw.rect(self.virtual_screen, (40, 60, 80), self.opt3, border_radius = 10)
+            pygame.draw.rect(self.virtual_screen, 'White',self.opt3,3, border_radius = 10)
 
-    #text surfaces and rectangles for intro
+        self.opt1_surf = self.font3.render('Wins', False, 'White').convert_alpha()
+        opt1_rect = self.opt1_surf.get_rect(center = self.opt1.center)
 
-    text1_surf = font1.render('Game Hub', False, c4).convert_alpha()
-    text1_rect = text1_surf.get_rect(center = (curr_width//2,curr_height//8))
+        self.opt2_surf = self.font3.render('Losses', False, 'White').convert_alpha()
+        opt2_rect = self.opt2_surf.get_rect(center = self.opt2.center)
 
-    text2_surf = font2.render('Click on a game to play', False, 'Grey').convert_alpha()
-    text2_rect = text2_surf.get_rect(center = (curr_width//2,(curr_height//8)*3))
+        self.opt3_surf = self.font3.render('Win/Loss Ratio', False, 'White').convert_alpha()
+        opt3_rect = self.opt3_surf.get_rect(center = self.opt3.center)
+        self.virtual_screen.blit(self.opt1_surf,opt1_rect)
+        self.virtual_screen.blit(self.opt2_surf,opt2_rect)
+        self.virtual_screen.blit(self.opt3_surf,opt3_rect)
+        
+        self.virtual_screen.blit(self.text_surf,self.text_rect)
 
-    player_rect = player_surf.get_rect(midleft = (0,curr_height//8))
+        if self.opt4.collidepoint((self.virtual_mouse_x,self.virtual_mouse_y)):
+            pygame.draw.rect(self.virtual_screen, (134,151,196), self.opt4, border_radius = 20)
+            pygame.draw.rect(self.virtual_screen, 'White', self.opt4,3, border_radius = 20)
+        else:
+            pygame.draw.rect(self.virtual_screen, (61,82,160), self.opt4, border_radius = 10)
+            pygame.draw.rect(self.virtual_screen, 'White',self.opt4,3, border_radius = 10)
 
-    surf1 = pygame.Surface((curr_width,curr_height//4))
-    surf2 = pygame.Surface((curr_width,(curr_height)*3))
-    surf1.fill(c1)
-    surf2.fill(c2)
+        self.opt4_surf = self.font1.render('PLAY  AGAIN', False, 'White').convert_alpha()
+        self.opt4_rect = self.opt4_surf.get_rect(center = self.opt4.center)
+        self.virtual_screen.blit(self.opt4_surf,self.opt4_rect)
 
-    screen.blit(surf1, (0,0))
-    screen.blit(surf2, (0,curr_height//4))
-    pygame.draw.line(screen,'White',(0,curr_height//4),(curr_width,curr_height/4),8)
-    screen.blit(text1_surf,text1_rect)
-    screen.blit(text2_surf, text2_rect)
-    screen.blit(player_surf, player_rect)
-
-    
-    #defining options outline
-
-    opt1 = pygame.Rect(curr_width//24,curr_height//2,(curr_width//12)*11,curr_height//8)
-    opt2 = pygame.Rect(curr_width//24,(curr_height//3)*2,(curr_width//12)*11,curr_height//8)
-    opt3 = pygame.Rect(curr_width//24,(curr_height//6)*5,(curr_width//12)*11,curr_height//8)
-
-
-    if opt1.collidepoint(mouse_pos):
-        pygame.draw.rect(screen, c4, opt1, border_radius = 20)
-        pygame.draw.rect(screen, 'White', opt1,3, border_radius = 20)
-    else:
-        pygame.draw.rect(screen, c3, opt1, border_radius = 10)
-        pygame.draw.rect(screen, 'White', opt1,5, border_radius = 10)
-
-    if opt2.collidepoint(mouse_pos):
-        pygame.draw.rect(screen, c4, opt2, border_radius = 20)
-        pygame.draw.rect(screen, 'White', opt2,5, border_radius = 20)
-    else:
-        pygame.draw.rect(screen, c3, opt2, border_radius = 10)
-        pygame.draw.rect(screen, 'White', opt2,5, border_radius = 10)
-
-    if opt3.collidepoint(mouse_pos):
-        pygame.draw.rect(screen, c4, opt3, border_radius = 20)
-        pygame.draw.rect(screen, 'White', opt3,5, border_radius = 20)
-    else:
-        pygame.draw.rect(screen, c3, opt3, border_radius = 10)
-        pygame.draw.rect(screen, 'White', opt3,5, border_radius = 10)
-    
-    #option surfaces and rectangles
-
-    opt1_surf = font3.render('Tic Tac Toe', False, c5).convert_alpha()
-    opt1_rect = opt1_surf.get_rect(center = opt1.center)
-
-    opt2_surf = font3.render('Othello', False, c5).convert_alpha()
-    opt2_rect = opt2_surf.get_rect(center = opt2.center)
-
-    opt3_surf = font3.render('Connect4', False, c5).convert_alpha()
-    opt3_rect = opt3_surf.get_rect(center = opt3.center)
-
-    screen.blit(opt1_surf, opt1_rect)
-    screen.blit(opt2_surf, opt2_rect)
-    screen.blit(opt3_surf, opt3_rect)
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
-
-    pygame.display.update()
-    clock.tick(120)
+menu = Menu(800,800,'hello','bye')
+menu.gameloop()
