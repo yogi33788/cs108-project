@@ -22,7 +22,7 @@ declare -A tictactoewins othellowins connect4wins
 declare -A tictactoelosses othellolosses connect4losses
 declare -A tictactoe_wbyl othello_wbyl connect4_wbyl
 
-while read -r line; do
+while read line; do
 
     user=$(echo "$line" | cut -d " " -f 2)
     w_l=$(echo "$line" | cut -d " " -f 1)
@@ -50,7 +50,7 @@ while read -r line; do
     fi
 done < winloss.ssv
 
-while read -r line; do
+while read -line; do
 
     if (( ${tictactoelosses[$line]:-0} != 0 )); then
         w=${tictactoewins[$line]:-0}
@@ -120,4 +120,3 @@ echo "=== Connect4 ==="
 echo "User Wins Losses W/L" | cat - connect4.ssv | column -t
 
 rm usersfile
-
