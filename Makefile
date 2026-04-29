@@ -1,5 +1,4 @@
-cd ../cs108-project
-rm -rf ../submission_clean#variable
+#variable
 LATEX = pdflatex
 
 .PHONY: all clean

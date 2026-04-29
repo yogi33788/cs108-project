@@ -79,32 +79,85 @@
     \subsection{Generic Game Class (Inheritance)}
     We created a \texttt{Base} class to handle shared properties like player names, turn switching. Specific games like \texttt{Tictactoe} and others too inherit from this class.
 
-    \subsection{Game-Specific Logic}
-    \begin{itemize}
-        \item \textbf{Tic-Tac-Toe:} Played on a 10x10 grid where players must connect 5 marks. We used NumPy slicing for quick win-checking.
-        \item \textbf{Othello:} Uses a "checkline" algorithm to detect valid moves and flip opponent pieces across rows, columns, and diagonals.
-        \item \textbf{Connect 4:} Implements "gravity" logic to drop pieces to the lowest available row.
-    \end{itemize}
 
+    \subsection{Game-Specific Logic}
+
+    \textbf{Tic-Tac-Toe (10×10, Five-in-a-Row)}\\
+    This version of Tic-Tac-Toe is played on a 10×10 grid, where the objective is to place five consecutive marks in any direction (horizontal, vertical, or diagonal). Internally, the board state is stored using a NumPy array called \texttt{used}, where each cell contains \texttt{None} (empty), \texttt{1} (Player X), or \texttt{0} (Player O).
+    
+    When a player makes a move, the corresponding cell in the array is updated with the player’s value, and the turn is switched. Instead of using nested loops for checking wins, the implementation relies on efficient NumPy operations.
+    
+    To detect a win, a boolean matrix is first created:
+    \begin{center}
+    \texttt{x = (used == 1 - player)}
+    \end{center}
+    This isolates all positions belonging to the last player who made a move.
+    
+    For horizontal checks, the board is sliced into overlapping windows of length 5 (e.g., columns 0–4, 1–5, ..., 5–9). The \texttt{all(axis=1)} function verifies whether all elements in each slice are True. If any row satisfies this condition, a win is declared.
+    
+    A similar approach is used for vertical checks, but slicing is applied across rows instead of columns.
+    
+    For diagonal detection, the logic becomes more interesting. Instead of checking each diagonal individually, multiple shifted subarrays (like 6×6 blocks) are extracted and combined using element-wise logical AND operations. If the same position across all these arrays is True, it indicates five consecutive marks diagonally. This method avoids explicit iteration and makes the check extremely fast.
+    
+    The same idea is applied for both \textbackslash{} and / diagonals by appropriately slicing the matrix. If any condition is satisfied, the game is marked as over immediately.
+    
+    \vspace{0.4cm}
     \begin{figure}[h]
     \centering
-    \begin{minipage}{0.3\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{tictactoe.png}
-        \caption{Tic-Tac-Toe}
-    \end{minipage}
-    \hfill 
-    \begin{minipage}{0.3\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{othello.png}
-        \caption{Othello}
-    \end{minipage}
-    \hfill
-    \begin{minipage}{0.3\textwidth}
-        \centering
-        \includegraphics[width=\textwidth]{connect4.png}
-        \caption{Connect 4}
-    \end{minipage}
+    \includegraphics[width=0.5\textwidth]{tictactoe.png}
+    \caption{Tic-Tac-Toe}
+    \label{fig:menu}
+    \end{figure}
+    
+    \textbf{Connect 4}\\
+    Connect 4 is played on a 7×7 grid where the goal is to align four consecutive discs. The board is again stored using a NumPy array, and each column has an associated \texttt{level} value that tracks how many discs are already placed in that column.
+    
+    When a player selects a column, the disc is assigned to the lowest available position using:
+    \begin{center}
+    \texttt{row = 6 - level[col]}
+    \end{center}
+    This simulates gravity, ensuring that pieces stack correctly from bottom to top.
+    
+    After placing a disc, the turn switches to the other player, and the win-checking process begins.
+    
+    The win detection logic closely mirrors the Tic-Tac-Toe approach but uses sequences of length 4 instead of 5. Horizontal checks are performed by slicing the board into overlapping groups of four columns and applying \texttt{all(axis=1)}. Vertical checks use similar slicing across rows.
+    
+    For diagonal detection, multiple 4×4 submatrices are extracted from the board. These submatrices are shifted step-by-step and combined using logical AND operations. If any position remains True after combining, it indicates four aligned discs diagonally.
+    
+    This method ensures that all possible diagonal combinations are checked efficiently without explicitly looping over each diagonal. As soon as any valid sequence is found, the game state is updated to indicate completion.
+    
+              \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{connect4.png}
+    \caption{Connect4}
+    \label{fig:menu}
+    \end{figure}
+    
+    \textbf{Othello (Reversi)}\\
+    Othello is played on an 8×8 grid, where the main challenge lies not in placement, but in flipping the opponent’s discs. The board is represented using a NumPy array where \texttt{0} denotes Black, \texttt{1} denotes White, and \texttt{None} indicates an empty cell.
+    
+    The core logic revolves around validating moves and flipping discs correctly. A move is only valid if placing a disc captures at least one opponent disc. This is handled by the \texttt{check\_and\_flip} function, which checks all four directions: horizontal, vertical, and two diagonals.
+    
+    At the heart of this process is the \texttt{checkline} function. Given a one-dimensional slice of the board (row, column, or diagonal), it examines both forward and backward directions from the chosen position. It searches for a sequence where opponent discs are followed by a disc of the current player. If such a pattern is found, all intermediate discs are flipped.
+    
+    For horizontal and vertical checks, rows and columns are directly extracted from the array. For diagonal checks, NumPy’s \texttt{diagonal()} function is used. In the case of the anti-diagonal, the board is flipped using \texttt{fliplr()} before extracting the diagonal.
+    
+    If any direction results in a successful flip, the move is considered valid, and the board is updated in-place.
+    
+    The game also includes a recursive function \texttt{has\_any\_valid\_move}, which scans all empty cells to determine whether a player has at least one valid move. If a player cannot move, the turn is passed back. If neither player has a valid move, the game ends.
+    
+    Finally, the winner is determined by counting the number of discs using:
+    \begin{center}
+    \texttt{np.sum(used == 0)} and \texttt{np.sum(used == 1)}
+    \end{center}
+    
+    This implementation focuses heavily on array manipulation and avoids unnecessary loops, making the logic both efficient and clean.
+
+          \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{othello.png}
+    \caption{Othello}
+    \label{fig:menu}
     \end{figure}
     \newpage
     \section{Leaderboard and Analytics}
