@@ -1,6 +1,11 @@
 import csv
-import matplotlib.pyplot as plt
 from collections import Counter
+import matplotlib
+matplotlib.use('TkAgg')
+
+import matplotlib.pyplot as plt
+
+
 
 #creates empty list 
 winner = []

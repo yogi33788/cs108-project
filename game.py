@@ -227,7 +227,7 @@ class Menu():
             winner = self.p1
             loser = self.p2
         from datetime import datetime
-        date = datetime.now().strftime("%d%m%Y,%H:%M:%S")
+        date = datetime.now().strftime("%d-%m-%Y %H:%M:%S")
 
         with open("history.csv","a") as file:
             file.write(f"{winner},{loser},{date},{self.selected_game.__class__.__name__}\n")
