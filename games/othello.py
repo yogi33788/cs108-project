@@ -24,7 +24,7 @@ class Othello(Base):
         self.b_disc = pygame.image.load('black.png')
         self.w_disc = pygame.image.load('white.png')
 
-        # virtual screen
+        # virtual screen and some assingments
         self.columns = 8
         self.rows = 8
         self.x_margin = 45/2
@@ -32,6 +32,7 @@ class Othello(Base):
         self.gap = 5
         self.side = 90
 
+        # text surfaces and their rectangles
         self.text1_surf = self.font1.render('((O T H E L L O))', False, 'White')
         self.text1_rect = self.text1_surf.get_rect(center=(self.base_width / 2, 45/2.5))
         
@@ -40,6 +41,7 @@ class Othello(Base):
         self.text3_surf = self.font2.render('Black\'s turn :', False, 'White')
         self.text3_rect = self.text3_surf.get_rect(topleft =(20, 15))
 
+        # rectangle array assignment to None  and used which tracks what are being used and by whom
         self.rectangle = np.full((self.rows, self.columns), None)
         self.used = np.full((self.rows, self.columns), None)
 
@@ -57,7 +59,7 @@ class Othello(Base):
         virtual_screen.fill('Black')
         virtual_screen.blit(self.text1_surf, self.text1_rect)
 
-        # Dynamic Score on Screen
+        # Dynamic Score on Screen for white and black coins calculated 
         b_score = np.sum(self.used == 0)
         w_score = np.sum(self.used == 1)
         score1_surf = self.score_font.render(f"Black: {b_score}", True, 'Red')
@@ -67,10 +69,26 @@ class Othello(Base):
         virtual_screen.blit(score1_surf, score1_rect)
         virtual_screen.blit(score2_surf, score2_rect)
 
+        # bliting whose turn is it on the screen
         if self.player == 1:
             virtual_screen.blit(self.text2_surf, self.text2_rect)
         else:
             virtual_screen.blit(self.text3_surf, self.text3_rect)
+        
+        # covering the gaps between the rectangles created by creating a white rectangle
+
+        board_width = self.columns * self.side + (self.columns - 1) * self.gap
+        board_height = self.rows * self.side + (self.rows - 1) * self.gap
+
+        for i in range(self.rows - 1):
+            y = self.y_margin + (i + 1) * self.side + i * self.gap
+            pygame.draw.rect(virtual_screen, 'White',(self.x_margin, y, board_width, self.gap))
+        
+        for j in range(self.columns - 1):
+            x = self.x_margin + (j + 1) * self.side + j * self.gap
+            pygame.draw.rect(virtual_screen, 'White', (x, self.y_margin, self.gap, board_height))
+
+        # creating the hover effect and drawing the rectangles of the board
 
         for i in range(self.rows):
             for j in range(self.columns):
@@ -81,7 +99,7 @@ class Othello(Base):
                 else:
                     pygame.draw.rect(virtual_screen, self.green, rect)
                 
-                # Draw Discs
+                # Draw Discs where it is possible to make a move by a player
                 if self.used[i][j] == 1:
                     virtual_screen.blit(self.w_disc, rect)
                 elif self.used[i][j] == 0:
@@ -100,7 +118,6 @@ class Othello(Base):
             for i in range(self.rows):
                 for j in range(self.columns):
                     if self.rectangle[i][j].collidepoint(mx, my):
-                        # Attempt move
                         if self.check_and_flip(i, j, self.used, self.player):
                             self.used[i][j] = self.player
                             
@@ -109,6 +126,7 @@ class Othello(Base):
                                 self.player = 1 - self.player
                             elif not self.has_any_valid_move(self.used, self.player):
                                 # Game Over logic
+                                # winner 
                                 self.gameover = True
                                 b_score = np.sum(self.used == 0)
                                 w_score = np.sum(self.used == 1)
@@ -128,7 +146,7 @@ class Othello(Base):
         else:
             front = line[i+1:]
 
-        not_opp_disc = np.where(front != other_player)[0]
+        not_opp_disc = np.where(front != other_player)[0] #returns array varies opposite and not opposite disc
         if not_opp_disc.size != 0:
             x = not_opp_disc[0]
             if x > 0 and (i + 1 + x) < len(line) and line[i + 1 + x] == player:
@@ -149,10 +167,12 @@ class Othello(Base):
 
         return check
 
+    #check horizontally
     def hor_check(self,i,j,used,player):
         line = used[i,:]
         return self.checkline(line,j,player)
         
+    #check vertically
     def ver_check(self,i,j,used,player):
         line = used[:,j]
         return self.checkline(line,i,player)
@@ -183,7 +203,7 @@ class Othello(Base):
             used[:] = np.fliplr(used_fliplr)
         return check
         
-    #check and  flip 
+    #check and flip  all horizontal vertical and both diagonals
     def check_and_flip(self,i,j,used,player):
         if used[i,j] is not None :
             return False
@@ -193,9 +213,11 @@ class Othello(Base):
         diag2 = self.diag2_check(i,j,used,player)
         return (hor|ver|diag1|diag2)
 
+    #returns is there a valid move or not
     def has_any_valid_move(self,used,player):
         i,j = np.where(used == None )
 
+        #recurssion used
         def valid(n):
             if n >= len(i):
                 return False

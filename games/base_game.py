@@ -1,7 +1,8 @@
 import numpy as np 
 import pygame,sys
 
-# Base class 
+# Base class defintion
+# and some attributes described very frequently in the pygames
 
 class Base:
     def __init__(self,p1,p2):

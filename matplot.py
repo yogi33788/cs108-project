@@ -5,8 +5,6 @@ matplotlib.use('TkAgg')
 
 import matplotlib.pyplot as plt
 
-
-
 #creates empty list 
 winner = []
 wins = []

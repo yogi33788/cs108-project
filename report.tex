@@ -3,6 +3,7 @@
 \usepackage{hyperref}
 \usepackage{dirtree}
 \usepackage[margin=0.6in]{geometry}
+\usepackage{graphicx}
 
 \title{Mini Game Hub\\ CS-108 Project}
 \author{Yogi \& Praneeth}
@@ -16,19 +17,19 @@
 
     \maketitle
     \begin{abstract}
-    This report describes the development of the Mini Game Hub, a secure, multi-user platform that combines Bash scripting for user authentication and Python (Pygame) for gameplay. Two authenticated players can select a game from the menu, play through a graphical interface, and save their results to a persistent leaderboard. 
+    This report is about the development of the Mini Game Hub, a secure, multi-user platform that combines Bash scripting for user authentication and Python (Pygame) for gameplay. Two authenticated players can select a game from the menu, play through a graphical interface, and save their results to a persistent leaderboard. 
     \end{abstract}
 
     \tableofcontents
     \newpage
 
     \section{Introduction}
-    The Mini Game Hub is a centralized platform where two players can log in and compete in various board games. The system's architecture focuses on two main areas: security (using SHA-256 hashing for passwords) and efficient game logic using NumPy matrix operations.
+    The Mini Game Hub is a pygame,bash platform where two players can log in and compete in various board games. The system's architecture focuses on two main areas: security (using SHA-256 hashing for passwords) and efficient game logic using NumPy matrix operations.
 
     \section{Libraries and Tools}
     \begin{itemize}
-        \item \textbf{Bash / Shell:} Used for the secure authentication system and formatting the terminal-based leaderboard.
-        \item \textbf{Pygame-CE:} Used to build the 2D GUI and handle real-time user input.
+        \item \textbf{Bash / Shell:} Used for the authentication of the system and formatting the terminal-based leaderboard.
+        \item \textbf{Pygame-CE:} Used to build the GUI and handle real-time user input.
         \item \textbf{NumPy:} Used for board representations and win-condition slicing to keep the game logic fast and efficient.
         \item \textbf{Matplotlib:} Used to generate post-game analytics, including bar and pie charts.
     \end{itemize}
@@ -38,9 +39,9 @@
     \dirtree{%
         .1 cs108-project/.
         .2 main.sh \dots{} (Entry point \& Auth).
-        .2 hub\_menu.py \dots{} (Main Menu \& Selection).
+        .2 game.py \dots{} (Main Menu \& Selection).
         .2 leaderboard.sh \dots{} (Bash Statistics).
-        .2 plotgraphs.py \dots{} (Analytics).
+        .2 matplot.py \dots{} (Analytics).
         .2 users.tsv \dots{} (Hashed Credentials).
         .2 history.csv \dots{} (Game Records).
         .2 games/.
@@ -54,22 +55,29 @@
 
     \section{Features}
     \begin{itemize}
-        \item \textbf{User Authentication:} A secure login system using SHA-256 hashing to protect user passwords.
+        \item \textbf{User Authentication:} A secure login system using SHA-256 hashing to protect the user passwords.
         \item \textbf{Multi-Game Support:} Includes full versions of Tic-Tac-Toe, Othello, and Connect 4.
         \item \textbf{Turn-Based Game play:} A reliable system for managing player turns and game flow.
         \item \textbf{Win Detection:} Optimized algorithms that instantly detect winning conditions.
         \item \textbf{Leaderboard System:} Tracks player wins and losses over time.
         \item \textbf{Data Persistence:} All match records are saved in CSV format.
-        \item \textbf{Data Visualization:} Automatically generates performance graphs using Matplotlib.
+        \item \textbf{Data Visualization:} Automatically generates and opens the performance graphs using Matplotlib.
         \item \textbf{Menu Interface:} A user-friendly GUI for easy navigation and game selection.
     \end{itemize}
+    \newpage
+      \begin{figure}[h]
+    \centering
+    \includegraphics[width=0.5\textwidth]{gamehub.png}
+    \caption{The Mini Game Hub Main Menu Interface}
+    \label{fig:menu}
+    \end{figure}
     
     \section{Core Implementation Logic}
     \subsection{Authentication System (Bash)}
-The \texttt{main.sh} script acts as the entry point. It uses the \texttt{sha256sum} tool to hash passwords before storing them in \texttt{users.tsv}. This ensures that even if the data file is accessed, the actual passwords remain secure.
+    The \texttt{main.sh} script acts as the entry point. It uses the \texttt{sha256sum} tool to hash passwords before storing them in \texttt{users.tsv}. This ensures that even if the data file is accessed, the actual passwords remain secure.
 
     \subsection{Generic Game Class (Inheritance)}
-    We created a \texttt{Base} class to handle shared properties like player names, turn switching, and NumPy board initialization. Specific games like \texttt{Tictactoe} inherit from this class and override the \texttt{draw()} and \texttt{winner()} methods.
+    We created a \texttt{Base} class to handle shared properties like player names, turn switching. Specific games like \texttt{Tictactoe} and others too inherit from this class.
 
     \subsection{Game-Specific Logic}
     \begin{itemize}
@@ -78,8 +86,35 @@ The \texttt{main.sh} script acts as the entry point. It uses the \texttt{sha256s
         \item \textbf{Connect 4:} Implements "gravity" logic to drop pieces to the lowest available row.
     \end{itemize}
 
+    \begin{figure}[h]
+    \centering
+    \begin{minipage}{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{tictactoe.png}
+        \caption{Tic-Tac-Toe}
+    \end{minipage}
+    \hfill 
+    \begin{minipage}{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{othello.png}
+        \caption{Othello}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.3\textwidth}
+        \centering
+        \includegraphics[width=\textwidth]{connect4.png}
+        \caption{Connect 4}
+    \end{minipage}
+    \end{figure}
+    \newpage
     \section{Leaderboard and Analytics}
     After each match, the Python engine appends the result to \texttt{history.csv}. The \texttt{leaderboard.sh} script then processes this data using \texttt{awk} and \texttt{sort} to rank players. At the same time, \texttt{matplot.py} creates visual charts of the players' performance history.
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.5\textwidth]{leaderboard.png}
+        \caption{Post-game Leaderboard and Analytics Dashboard}
+        \label{fig:leaderboard}
+    \end{figure}
 
     \section{Hurdles and Solutions}
     \begin{itemize}
@@ -90,11 +125,12 @@ The \texttt{main.sh} script acts as the entry point. It uses the \texttt{sha256s
     \end{itemize}
 
     \section{The "10-Hour" Plan}
-    If we had 10 additional hours, we would implement a Single Player mode featuring an AI opponent so users can play even when a second player is not available.
+    If we had 10 additional hours, we would implement a Single Player mode featuring an machine opponent so users can play even when a second player is not available.
+    definitely we would improve our project .
 
-    \begin{thebibliography}{9}
-        \bibitem{sha256} SHA-256 Hashing: \url{https://linux.die.net/man/1/sha256sum}
-        \bibitem{numpy} NumPy Indexing: \url{https://numpy.org/doc/stable/user/basics.indexing.html}
-        \bibitem{pygame} Pygame CE Documentation: \url{https://pyga.me/docs/}
+    \begin{thebibliography}{}
+        \bibitem{python} Python inheritance: \url{https://docs.python.org/3/tutorial/classes.html}
+        \bibitem{pygame} Pygame CE Documentation: \url{https://inventwithpython.com/pygame/}
     \end{thebibliography}
+
 \end{document}

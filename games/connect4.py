@@ -16,7 +16,7 @@ class Connect4(Base):
         self.font1 = pygame.font.Font('1.ttf',50)
         self.font2 = pygame.font.Font('2.ttf',40)
 
-        # player
+        # player and some basic variables assignment
         self.player = 1
         self.col = None
         self.columns = 7
@@ -26,21 +26,24 @@ class Connect4(Base):
         self.side = 100
         self.text1_surf = self.font2.render('((Connect 4))', False, (255,255,255))
         self.text1_rect = self.text1_surf.get_rect(center = (self.base_width/2, self.ty_margin/2))
+        # rectangle for logic set to None and some ther arrays 
         self.rectangle = np.full((self.rows,self.columns),None)
         self.used = np.full((self.rows,self.columns),None)
         self.level = np.full(8,0)
         self.ypos = self.ty_margin + self.side/2
         self.board_surf = self.create_board()
 
+        # creation of rectangles for the board and logic
         for i in range(self.rows):
             for j in range(self.columns):
                 self.rectangle[i][j] = pygame.Rect((j)*(self.side)+self.x_margin, (i)*(self.side)+self.ty_margin, self.side, self.side)
 
-
+    # whole process of the animation and static board 
     def draw(self, virtual_screen,mx,my):
         virtual_screen.fill(self.c1)
         virtual_screen.blit(self.text1_surf, self.text1_rect)
 
+        # setting a boundary for the coin 
         color = 'Red' if self.player == 1 else 'Black'
         if mx <= self.x_margin + self.side/2:
             pygame.draw.circle(virtual_screen,color,(self.x_margin+self.side/2, self.ty_margin/2),48)
@@ -49,6 +52,7 @@ class Connect4(Base):
         else:
             pygame.draw.circle(virtual_screen,color,(mx, self.ty_margin/2),48)
 
+        # animation done before blit of the punched hole board
         if self.animate:
             if self.player == 1:
                 pygame.draw.circle(virtual_screen,'Red',(self.x_margin+self.col*self.side+self.side/2,self.ypos),int(self.side/2-3))
@@ -63,10 +67,13 @@ class Connect4(Base):
                     else:
                         pygame.draw.circle(virtual_screen,'Black',self.rectangle[i][j].center,48)
 
-
         virtual_screen.blit(self.board_surf,(self.x_margin, self.ty_margin))
-        
+
+        # calling of winner method to check winning
         self.winner() 
+
+    # calculation of the click and which column does it belong to
+    # and setting animation 
 
     def handle_event(self, event, mouse_pos):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -86,7 +93,9 @@ class Connect4(Base):
                 if int(self.level[b]) <= 6:
                     self.animate = True
                         
-        
+
+    # checking of animation if it hits the ground or level and resets to a particular  position
+    # sets the coin to a particular box
     def update(self,virtual_screen):
         if self.animate:
             self.ypos += 5
@@ -99,6 +108,7 @@ class Connect4(Base):
                 self.ypos = self.ty_margin + self.side/2
 
 
+    # general function called once in __init__ to make the punched basic board
     def create_board(self):
         board_surf = pygame.Surface((self.columns*self.side, self.rows*self.side), pygame.SRCALPHA)
         board_surf.fill((0, 0, 0, 0))  # fully transparent
@@ -118,44 +128,48 @@ class Connect4(Base):
         x = (self.used == 1-self.player)
 
         # row check
-        row_0 = x[:, 0:4].all(axis=1)
+        # creating 4 lists
+        row_0 = x[:, 0:4].all(axis=1) #stores true only if all 4 values from any array are true
         row_1 = x[:, 1:5].all(axis=1)
         row_2 = x[:, 2:6].all(axis=1)
         row_3 = x[:, 3:7].all(axis=1)
 
-        if np.any(row_0 | row_1 | row_2 | row_3 ):
+        if np.any(row_0 | row_1 | row_2 | row_3 ): #If atleast any one value from any list is true
             self.gameover = True
             return 
 
 
         # column check
-        col_0 = x[0:4,:].all(axis=0)
+        # creating 4 lists
+        col_0 = x[0:4,:].all(axis=0) #stores true only if all 4 values from any array are true
         col_1 = x[1:5,:].all(axis=0)
         col_2 = x[2:6,:].all(axis=0)
         col_3 = x[3:7,:].all(axis=0)
 
-        if np.any(col_0 | col_1 | col_2 | col_3 ):
+        if np.any(col_0 | col_1 | col_2 | col_3 ): #If atleast any one value from any list is true
             self.gameover = True
             return 
         
         # diagonal check \
-        square_0 = x[0:4, 0:4]
+        #creates subarrays
+        square_0 = x[0:4, 0:4] 
         square_1 = x[1:5, 1:5]
         square_2 = x[2:6, 2:6]
         square_3 = x[3:7, 3:7]
 
-        arr = (square_0 & square_1 & square_2 & square_3 )
-        if np.any(arr):
+        arr = (square_0 & square_1 & square_2 & square_3 ) #If all values at same position of these arrays are true then diagonally(\) we get 4 consecutive values
+        if np.any(arr): #This checks complete board
             self.gameover = True
             return 
         
         # diagonal check /
+        #creates subarrays
         sq0 = x[0:4, 3:7]
         sq1 = x[1:5, 2:6]
         sq2 = x[2:6, 1:5] 
         sq3 = x[3:7, 0:4] 
 
-        ar = (sq0 & sq1 & sq2 & sq3 ) 
-        if np.any(ar):     
+        ar = (sq0 & sq1 & sq2 & sq3 )  #If all values at same position of these arrays are true then diagonally(/) we get 4 consecutive values
+        if np.any(ar): #This checks complete board
             self.gameover = True
             return

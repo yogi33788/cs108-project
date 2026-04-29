@@ -1,4 +1,4 @@
-import pygame,sys
+import pygame,sys,time
 from games.base_game import Base 
 from games.tictactoe import Tictactoe
 from games.connect4 import Connect4
@@ -68,12 +68,14 @@ class Menu():
                     sys.exit()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.selected_game:
+                        # checking if the game is over and doing respectively
                         if not self.selected_game.gameover:
                             if not self.selected_game.animate:
                                 self.selected_game.handle_event(event, (self.virtual_mouse_x, self.virtual_mouse_y))
                         else:
                             self.Outro_click() 
                     else:
+                        # selection of the options if chosen to play again
                         self.selection()
             
             # blit of background intro
@@ -141,6 +143,7 @@ class Menu():
         if self.opt4.collidepoint(self.virtual_mouse_x, self.virtual_mouse_y):
             self.selected_game = None
             self.append_history = False
+            self.winner_display = False
 
         elif self.opt1.collidepoint(self.virtual_mouse_x, self.virtual_mouse_y):
             self.run_leaderboard('wins')
@@ -170,7 +173,7 @@ class Menu():
             pass
         
     def Outro(self):
-        # outro screen display
+        # outro screen display ,options
         self.virtual_screen.blit(self.outro_surf,self.outro_rect)
         if self.opt1.collidepoint((self.virtual_mouse_x,self.virtual_mouse_y)):
             pygame.draw.rect(self.virtual_screen, (80, 140, 180), self.opt1, border_radius = 20)
@@ -219,7 +222,7 @@ class Menu():
         self.virtual_screen.blit(self.opt4_surf,self.opt4_rect)
 
     def history(self):
-
+        # aopending winner,loser,game,date to history.csv
         if self.selected_game.player == 1:
             winner = self.p2
             loser = self.p1
@@ -232,6 +235,7 @@ class Menu():
         with open("history.csv","a") as file:
             file.write(f"{winner},{loser},{date},{self.selected_game.__class__.__name__}\n")
         self.append_history = True
+
 
 # creating a method for class Menu with players from bash input
 menu = Menu(sys.argv[1],sys.argv[2])
