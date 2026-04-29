@@ -19,8 +19,6 @@ class Connect4(Base):
         # player
         self.player = 1
         self.col = None
-        self.base_width = 800
-        self.base_height = 800
         self.columns = 7
         self.rows = 7
         self.x_margin = 50

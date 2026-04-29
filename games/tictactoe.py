@@ -20,8 +20,6 @@ class Tictactoe(Base):
         self.X_surf = pygame.image.load('X.png')
         self.O_surf = pygame.image.load('O.png')
 
-        self.base_width = 800
-        self.base_height = 800
         self.columns = 10
         self.rows = 10
         self.x_margin = 55
