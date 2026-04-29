@@ -42,7 +42,7 @@ while read line; do
     no_of_w_l=$(echo "$line" | cut -d " " -f 4)
 
 #Mapping no of wins or losses for paticular user in that Game 
-    if [[ $game == "TicTacToe" ]]; then
+    if [[ $game == "Tictactoe" ]]; then
         if [[ $w_l == "wins" ]]; then
             tictactoewins["$user"]=$no_of_w_l
         else
