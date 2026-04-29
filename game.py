@@ -2,7 +2,7 @@ import pygame,sys
 from games.base_game import Base 
 from games.tictactoe import Tictactoe
 from games.connect4 import Connect4
-#from games.othello import Othello 
+from games.othello import Othello 
 import subprocess 
 
 class Menu:
