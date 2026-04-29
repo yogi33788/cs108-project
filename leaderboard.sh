@@ -137,15 +137,15 @@ elif [[ $1 == "wbyl" ]]; then
 fi
 
 #Prints Tictactoe table 
-echo "====== TicTacToe ======"
+echo "========= TicTacToe ========="
 echo "User Wins Losses W/L" | cat - tictactoe.ssv | column -t
 
 #Prints Othello table
-echo "====== Othello ======"
+echo "========= Othello ========="
 echo "User Wins Losses W/L" | cat - othello.ssv | column -t
 
 #Prints Connect4 table
-echo "====== Connect4 ======"
+echo "========= Connect4 ========="
 echo "User Wins Losses W/L" | cat - connect4.ssv | column -t
 
 #Removes extra created files
