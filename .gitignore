@@ -1,2 +1,24 @@
+# Python cache and compiled files
+__pycache__/
+*.py[cod]
+*$py.class
 
+# Virtual Environments
+venv/
+env/
+ENV/
+
+# Environment variables (Secrets/Passwords)
+.env
+
+# IDE specific folders (VS Code, PyCharm)
+.vscode/
+.idea/
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# The Windows bug we just fixed
+*:Zone.Identifier
 
