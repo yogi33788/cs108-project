@@ -22,3 +22,5 @@ Thumbs.db
 # The Windows bug we just fixed
 *:Zone.Identifier
 
+.venv/
+*.swp
