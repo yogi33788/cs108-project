@@ -9,6 +9,8 @@ game = []
 Game = []
 freq = []
 player = []
+game_freq = []
+bar_colors = []
 
 #Reads history.csv 
 with open("history.csv",mode="r",newline='') as file:
@@ -32,14 +34,18 @@ count_game = Counter(game)
 for key, value in count_game.items():
     Game.append(key)
     freq.append(value)
+    game_freq.append(f"{key}-{value}")
 
 #Bar graph for top5 total wins
-plt.bar(player,wins,color ='r',width=0.5)
+bar_colors = ['red','blue','yellow','green','crimson']
+plt.bar(player,wins,color =bar_colors,width=0.5)
 plt.title("Top 5 Players by total Wins")
 plt.xlabel("PLAYER")
 plt.ylabel("No of Wins")
 plt.show()
 
 #Pie chart of most played games by freaquency
-plt.pie(freq,labels=Game)
+plt.pie(freq,labels=game_freq,autopct='%1.1f%%')
+plt.title("No of Games Played")
 plt.show()
+
