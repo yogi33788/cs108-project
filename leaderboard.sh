@@ -1,4 +1,8 @@
 #!/bin/bash
+
+sed -i 's/\r$//' history.csv
+sed -i 's/\r$//' users.tsv
+
 > tictactoe.ssv
 > othello.ssv
 > connect4.ssv
@@ -31,7 +35,7 @@ declare -A tictactoe_wbyl othello_wbyl connect4_wbyl
 
 #Reads winloss.ssv file
 while read line; do
-
+    [[ -z "$line" ]] && continue
 #win or loss
     w_l=$(echo "$line" | cut -d " " -f 1)
 #username
@@ -65,7 +69,7 @@ done < winloss.ssv
 
 #Reads userfile which contains usernames
 while read line; do
-
+    [[ -z "$line" ]] && continue
 #If losses not equal to 0 then it do wins/losses directly by division for tictactoe
     if (( ${tictactoelosses[$line]:-0} != 0 )); then
         w=${tictactoewins[$line]:-0}

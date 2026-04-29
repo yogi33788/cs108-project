@@ -151,11 +151,11 @@ class Menu():
         elif self.opt3.collidepoint(self.virtual_mouse_x, self.virtual_mouse_y):
             self.run_leaderboard('wbyl')
 
-    def run_leaderboard(self, sort_by):
+    def run_leaderboard(self,sort_by):
         # bash cmds after choosing one of win,loss,w/l 
         pygame.quit()
-        subprocess.run(['bash', 'leaderboard.sh', 'sort_by'])
-        subprocess.run(['python3', 'matplotlib.py'])
+        subprocess.run(['bash', 'leaderboard.sh', sort_by])
+        subprocess.run(['python3', 'matplot.py'])
         sys.exit()
 
     def selection(self):
